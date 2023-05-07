@@ -24,6 +24,40 @@
  * */
 export function calcTileType(index, boardSize) {
   // TODO: ваш код будет тут
+  // сначала проверим угловые элементы
+
+  if (index === 0) {
+    return 'top-left';
+  }
+
+  if (index === boardSize - 1) {
+    return 'top-right';
+  }
+
+  if (index === boardSize * (boardSize - 1)) {
+    return 'bottom-left';
+  }
+
+  if (index === boardSize * boardSize - 1) {
+    return 'bottom-right';
+  }
+
+  if ((index + 1) % boardSize === 0) {
+    return 'right';
+  }
+
+  if (index % boardSize === 0) {
+    return 'left';
+  }
+
+  if (index <= (boardSize - 1)) {
+    return 'top';
+  }
+
+  if (index >= boardSize * (boardSize - 1)) {
+    return 'bottom';
+  }
+
   return 'center';
 }
 
@@ -37,4 +71,8 @@ export function calcHealthLevel(health) {
   }
 
   return 'high';
+}
+
+export function getMessage(character) {
+  return `\u{1F396} ${character.level} \u{2694} ${character.attack} \u{1F6E1} ${character.defence} \u{2764} ${character.health}`;
 }

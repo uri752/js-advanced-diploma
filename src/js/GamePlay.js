@@ -1,3 +1,4 @@
+import themes from './themes';
 import { calcHealthLevel, calcTileType } from './utils';
 
 export default class GamePlay {
@@ -12,6 +13,27 @@ export default class GamePlay {
     this.newGameListeners = [];
     this.saveGameListeners = [];
     this.loadGameListeners = [];
+
+    this.positionedCharacterArray = [];
+    this.selectedIndex = -1;
+    this.selectedIndexGreen = -1;
+    this.selectedIndexRed = -1;
+    this.selectedCharacter = null;
+    // this.isAppMove = false; // признак ход приложения-компьютера
+
+    this.counterCharacterPlayer1 = 0; // счетик персонажей игрока 1 (Человек)
+    this.counterCharacterPlayer2 = 0; // счетик персонажей игрока 2 (ПК)
+    this.roundGameOver = false; // признак завершения раунда
+    this.gameOver = false; // признак завершения игры
+
+    this.themesArray = [themes.prairie, themes.desert, themes.arctic, themes.mountain];
+    this.currentTheme = -1;
+
+    this.gameCtrl = null; // смог в onCellEnter дотянуться до контекста gameCtrl,
+    // чтобы вызвать инициализацию нового раунда, ввел вспомогательное поле
+
+    this.scorePlayer1 = 0;
+    this.scorePlayer2 = 0;
   }
 
   bindToDOM(container) {
@@ -44,9 +66,9 @@ export default class GamePlay {
     this.saveGameEl = this.container.querySelector('[data-id=action-save]');
     this.loadGameEl = this.container.querySelector('[data-id=action-load]');
 
-    this.newGameEl.addEventListener('click', event => this.onNewGameClick(event));
-    this.saveGameEl.addEventListener('click', event => this.onSaveGameClick(event));
-    this.loadGameEl.addEventListener('click', event => this.onLoadGameClick(event));
+    this.newGameEl.addEventListener('click', (event) => this.onNewGameClick(event));
+    this.saveGameEl.addEventListener('click', (event) => this.onSaveGameClick(event));
+    this.loadGameEl.addEventListener('click', (event) => this.onLoadGameClick(event));
 
     this.boardEl = this.container.querySelector('[data-id=board]');
 
@@ -54,9 +76,9 @@ export default class GamePlay {
     for (let i = 0; i < this.boardSize ** 2; i += 1) {
       const cellEl = document.createElement('div');
       cellEl.classList.add('cell', 'map-tile', `map-tile-${calcTileType(i, this.boardSize)}`);
-      cellEl.addEventListener('mouseenter', event => this.onCellEnter(event));
-      cellEl.addEventListener('mouseleave', event => this.onCellLeave(event));
-      cellEl.addEventListener('click', event => this.onCellClick(event));
+      cellEl.addEventListener('mouseenter', (event) => this.onCellEnter(event));
+      cellEl.addEventListener('mouseleave', (event) => this.onCellLeave(event));
+      cellEl.addEventListener('click', (event) => this.onCellClick(event));
       this.boardEl.appendChild(cellEl);
     }
 
@@ -147,34 +169,35 @@ export default class GamePlay {
 
   onCellEnter(event) {
     event.preventDefault();
+    // debugger;
     const index = this.cells.indexOf(event.currentTarget);
-    this.cellEnterListeners.forEach(o => o.call(null, index));
+    this.cellEnterListeners.forEach((o) => o.call(this.gameCtrl, index));
   }
 
   onCellLeave(event) {
     event.preventDefault();
     const index = this.cells.indexOf(event.currentTarget);
-    this.cellLeaveListeners.forEach(o => o.call(null, index));
+    this.cellLeaveListeners.forEach((o) => o.call(null, index));
   }
 
   onCellClick(event) {
     const index = this.cells.indexOf(event.currentTarget);
-    this.cellClickListeners.forEach(o => o.call(null, index));
+    this.cellClickListeners.forEach((o) => o.call(this.gameCtrl, index));
   }
 
   onNewGameClick(event) {
     event.preventDefault();
-    this.newGameListeners.forEach(o => o.call(null));
+    this.newGameListeners.forEach((o) => o.call(this.gameCtrl));
   }
 
   onSaveGameClick(event) {
     event.preventDefault();
-    this.saveGameListeners.forEach(o => o.call(null));
+    this.saveGameListeners.forEach((o) => o.call(this.gameCtrl));
   }
 
   onLoadGameClick(event) {
     event.preventDefault();
-    this.loadGameListeners.forEach(o => o.call(null));
+    this.loadGameListeners.forEach((o) => o.call(this.gameCtrl));
   }
 
   static showError(message) {
@@ -193,7 +216,7 @@ export default class GamePlay {
   deselectCell(index) {
     const cell = this.cells[index];
     cell.classList.remove(...Array.from(cell.classList)
-      .filter(o => o.startsWith('selected')));
+      .filter((o) => o.startsWith('selected')));
   }
 
   showCellTooltip(message, index) {
@@ -203,7 +226,7 @@ export default class GamePlay {
   hideCellTooltip(index) {
     this.cells[index].title = '';
   }
-  
+
   showDamage(index, damage) {
     return new Promise((resolve) => {
       const cell = this.cells[index];
