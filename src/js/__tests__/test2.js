@@ -34,6 +34,8 @@ test('test property of Vampire level 1', () => {
     defence: 25,
     health: 50,
     type: 'vampire',
+    allowableAttack: 2,
+    allowableMove: 2
   };
   expect(result).toEqual(resultExpect);
 });
